@@ -38,6 +38,7 @@ button:active,.held{transform:translateY(3px);box-shadow:0 1px #08090d;backgroun
 <script>
 (()=>{
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const heroSprite=new Image();heroSprite.src='assets/hero.svg';
 ctx.imageSmoothingEnabled=false;
 const W=480,H=270,keys={left:false,right:false,jump:false,attack:false};
 let score=0,lives=3,ended=false,won=false,noticeTimer=170;
@@ -59,14 +60,18 @@ rect(0,183,W,55,'#211b25');
 for(let x=25;x<480;x+=90){rect(x,111,7,13,'#d19b52');rect(x+2,111,3,13,'#f4c46a')}
 for(const p of platforms){rect(p.x,p.y,p.w,p.h,'#594333');rect(p.x,p.y,p.w,3,'#a08054')}
 rect(0,238,W,32,'#30272a');for(let x=0;x<W;x+=16)rect(x,250,9,2,'#514044');
-// player shadow and pixel hero
+// heroi pixel art original em sprite sheet (4 poses)
 rect(player.x+2,player.y+25,15,3,'#090b12');
 const px=player.x,py=player.y;
-rect(px+5,py,8,5,'#d8b18a');rect(px+4,py+4,10,3,'#20151b'); // head/hair
-rect(px+3,py+7,12,11,'#263d58');rect(px+1,py+8,3,14,'#6d2535');rect(px+14,py+8,3,14,'#6d2535');
-rect(px+5,py+18,4,8,'#171b2a');rect(px+11,py+18,4,8,'#171b2a');
-rect(px+7,py+9,2,2,'#f1d7b2');
-if(player.attack>0){rect(player.face===1?px+15:px-15,py+10,18,3,'#d8d5cf');rect(player.face===1?px+29:px-17,py+8,3,7,'#fff1c9')}
+let frame=0,row=0;
+if(player.attack>0){frame=3;row=1}
+else if(!player.ground){frame=2;row=0}
+else if(Math.abs(player.vx)>0){frame=Math.floor(performance.now()/150)%2+1;row=0}
+if(heroSprite.complete&&heroSprite.naturalWidth){
+ ctx.save();if(player.face<0){ctx.translate(px+player.w/2,0);ctx.scale(-1,1);ctx.translate(-(px+player.w/2),0)}
+ ctx.drawImage(heroSprite,frame*32,row*40,32,40,px-7,py-9,32,40);ctx.restore();
+}else{rect(px+5,py,8,5,'#d8b18a');rect(px+3,py+7,12,11,'#263d58');rect(px+1,py+8,3,14,'#6d2535');rect(px+5,py+18,4,8,'#171b2a')}
+if(player.attack>0){rect(player.face===1?px+18:px-18,py+10,18,2,'#d8d5cf')}
 if(enemy.alive){let ex=enemy.x,ey=enemy.y;rect(ex+4,ey,12,22,'#504a69');rect(ex+2,ey+4,15,12,'#74678a');rect(ex+5,ey+7,3,3,'#ff4e59');rect(ex+12,ey+7,3,3,'#ff4e59');rect(ex+1,ey+18,5,4,'#292438');rect(ex+13,ey+18,5,4,'#292438')}
 }
 // physics/update
