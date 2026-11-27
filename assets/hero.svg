@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="80" viewBox="0 0 128 80" shape-rendering="crispEdges">
+<defs>
+ <g id="hero">
+  <!-- capa -->
+  <path fill="#421522" d="M10 17h12v4h3v14h-3v3H8v-4h2z"/>
+  <path fill="#76283a" d="M10 21h4v12h-4zM18 20h3v13h-3z"/>
+  <!-- botas e pernas -->
+  <path fill="#171923" d="M11 29h5v7h-2v3H7v-3h4zM18 29h5v7h4v3h-9z"/>
+  <path fill="#9b7956" d="M7 37h8v2H7zM18 37h9v2h-9z"/>
+  <!-- corpo -->
+  <path fill="#303746" d="M11 15h11v15H10V19z"/>
+  <path fill="#b49a76" d="M14 17h2v9h-2z"/>
+  <path fill="#151923" d="M18 18h3v8h-3z"/>
+  <!-- rosto -->
+  <path fill="#d9b58e" d="M12 7h10v9H12z"/>
+  <path fill="#f0d1a8" d="M13 9h7v5h-7z"/>
+  <path fill="#201923" d="M19 11h2v2h-2z"/>
+  <!-- cabelo longo -->
+  <path fill="#090d16" d="M10 5h13v4h2v11h-3v-7h-2v-3h-6v4h-2v7H9V9h1z"/>
+  <path fill="#202637" d="M11 6h9v2h-9z"/>
+  <!-- gola -->
+  <path fill="#d6c6a6" d="M13 15h3v3h-3z"/>
+  <!-- espada -->
+  <path fill="#cbd4dc" d="M24 18h2v-8h2V8h2v3h-2v9h-2v3h-2z"/>
+  <path fill="#8d9ba8" d="M26 9h2v9h-2z"/>
+  <path fill="#b58a54" d="M23 20h7v2h-7z"/>
+ </g>
+</defs>
+<rect width="128" height="80" fill="none"/>
+<g transform="translate(0 0)"><use href="#hero"/></g>
+<g transform="translate(32 0)"><use href="#hero"/><path fill="#76283a" d="M42 23h4v10h-4z"/><path fill="#171923" d="M43 34h5v4h-5z"/></g>
+<g transform="translate(64 0)"><use href="#hero"/><path fill="#421522" d="M74 18h12v5h-12zM76 14h8v4h-8z"/><path fill="#171923" d="M75 31h5v5h-5z"/></g>
+<g transform="translate(96 0)"><use href="#hero"/><path fill="#cbd4dc" d="M119 15h2V2h2v13h-2v3h-2z"/><path fill="#b58a54" d="M117 17h7v2h-7z"/></g>
+<g transform="translate(0 40)"><use href="#hero"/></g>
+<g transform="translate(32 40)"><use href="#hero"/><path fill="#76283a" d="M42 22h4v12h-4z"/></g>
+<g transform="translate(64 40)"><use href="#hero"/><path fill="#cbd4dc" d="M87 18h2V5h2v13h-2v3h-2z"/><path fill="#b58a54" d="M85 20h7v2h-7z"/></g>
+<g transform="translate(96 40)"><use href="#hero"/><path fill="#cbd4dc" d="M120 13h2V0h2v13h-2v3h-2z"/></g>
+</svg>
