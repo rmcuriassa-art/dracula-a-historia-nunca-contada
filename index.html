@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#090d18">
+<title>Drácula: A História Nunca Contada</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090d18;color:#eee;font-family:Georgia,serif;touch-action:none}
+#wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;gap:8px}
+h1{font-size:clamp(17px,4vw,25px);letter-spacing:2px;text-align:center;margin:0;color:#d8c4a0;text-shadow:0 2px #561d27}
+#stage{width:min(100%,900px);position:relative;border:2px solid #68513c;box-shadow:0 0 30px #000;background:#111827}
+canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+#hud{position:absolute;inset:8px 10px auto 10px;display:flex;justify-content:space-between;pointer-events:none;font: bold 12px monospace;text-shadow:2px 2px #000}
+#message{position:absolute;inset:40% 5% auto;text-align:center;font:bold 16px monospace;color:#f2dfbd;text-shadow:2px 2px #000;pointer-events:none}
+#controls{width:min(100%,900px);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pad,.actions{display:flex;gap:9px;align-items:center}
+button{border:2px solid #94775a;background:linear-gradient(#30313b,#171923);color:#f5e8d0;border-radius:12px;min-width:58px;height:58px;font:bold 20px monospace;box-shadow:0 4px #08090d;touch-action:none}
+button:active,.held{transform:translateY(3px);box-shadow:0 1px #08090d;background:#5b2933}
+#hint{font:11px monospace;color:#a9a4a0;text-align:center}
+@media(min-width:700px){button{min-width:68px;height:62px}}
+</style>
+</head>
+<body>
+<div id="wrap">
+<h1>DRÁCULA: A HISTÓRIA NUNCA CONTADA</h1>
+<div id="stage">
+<canvas id="game" width="480" height="270" aria-label="Jogo de plataforma em um castelo"></canvas>
+<div id="hud"><span>VIDA <b id="life">♥♥♥</b></span><span>NOITE I · O CASTELO</span><span>ALMAS <b id="score">0</b></span></div>
+<div id="message">A noite guarda seus segredos...</div>
+</div>
+<div id="controls">
+<div class="pad"><button data-key="left" aria-label="Esquerda">◀</button><button data-key="right" aria-label="Direita">▶</button></div>
+<div class="actions"><button data-key="jump">↑</button><button data-key="attack">⚔</button></div>
+</div>
+<div id="hint">Toque nos controles · Derrote o espectro · Encontre a saída</div>
+</div>
+<script>
+(()=>{
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+const W=480,H=270,keys={left:false,right:false,jump:false,attack:false};
+let score=0,lives=3,ended=false,won=false,noticeTimer=170;
+const player={x:42,y:190,w:17,h:27,vx:0,vy:0,ground:false,face:1,attack:0,inv:0};
+const enemy={x:320,y:205,w:19,h:22,alive:true,dir:-1,walk:0};
+const platforms=[{x:0,y:238,w:480,h:32},{x:112,y:195,w:72,h:9},{x:220,y:158,w:78,h:9},{x:355,y:190,w:70,h:9}];
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
+function text(t,x,y,size=10,color='#eee'){ctx.font=size+'px monospace';ctx.fillStyle=color;ctx.fillText(t,x,y)}
+function draw(){
+rect(0,0,W,H,'#101626');
+for(let i=0;i<70;i++){let x=(i*73)%W,y=(i*37)%150;rect(x,y,1,1,'#b9c6d5')}
+rect(0,150,W,88,'#171522');
+// moon
+rect(382,32,34,34,'#c8c2ad');rect(389,26,34,34,'#101626');
+// distant castle towers
+for(let x=15;x<480;x+=90){rect(x,94,38,90,'#252435');rect(x+7,78,24,20,'#252435');rect(x+14,67,10,13,'#252435');rect(x+14,115,8,18,'#080d18');}
+rect(0,183,W,55,'#211b25');
+// windows
+for(let x=25;x<480;x+=90){rect(x,111,7,13,'#d19b52');rect(x+2,111,3,13,'#f4c46a')}
+for(const p of platforms){rect(p.x,p.y,p.w,p.h,'#594333');rect(p.x,p.y,p.w,3,'#a08054')}
+rect(0,238,W,32,'#30272a');for(let x=0;x<W;x+=16)rect(x,250,9,2,'#514044');
+// player shadow and pixel hero
+rect(player.x+2,player.y+25,15,3,'#090b12');
+const px=player.x,py=player.y;
+rect(px+5,py,8,5,'#d8b18a');rect(px+4,py+4,10,3,'#20151b'); // head/hair
+rect(px+3,py+7,12,11,'#263d58');rect(px+1,py+8,3,14,'#6d2535');rect(px+14,py+8,3,14,'#6d2535');
+rect(px+5,py+18,4,8,'#171b2a');rect(px+11,py+18,4,8,'#171b2a');
+rect(px+7,py+9,2,2,'#f1d7b2');
+if(player.attack>0){rect(player.face===1?px+15:px-15,py+10,18,3,'#d8d5cf');rect(player.face===1?px+29:px-17,py+8,3,7,'#fff1c9')}
+if(enemy.alive){let ex=enemy.x,ey=enemy.y;rect(ex+4,ey,12,22,'#504a69');rect(ex+2,ey+4,15,12,'#74678a');rect(ex+5,ey+7,3,3,'#ff4e59');rect(ex+12,ey+7,3,3,'#ff4e59');rect(ex+1,ey+18,5,4,'#292438');rect(ex+13,ey+18,5,4,'#292438')}
+}
+// physics/update
+function update(){
+if(ended)return;
+if(noticeTimer>0){noticeTimer--;if(noticeTimer===0)document.getElementById('message').style.display='none'}
+player.vx=0;if(keys.left){player.vx=-2;player.face=-1}if(keys.right){player.vx=2;player.face=1}
+player.x=Math.max(0,Math.min(W-player.w,player.x+player.vx));
+if(keys.jump&&player.ground){player.vy=-7.2;player.ground=false}
+player.vy=Math.min(8,player.vy+0.34);let oldY=player.y;player.y+=player.vy;player.ground=false;
+for(const p of platforms){if(player.x+player.w>p.x&&player.x<p.x+p.w&&oldY+player.h<=p.y&&player.y+player.h>=p.y&&player.vy>=0){player.y=p.y-player.h;player.vy=0;player.ground=true}}
+if(keys.attack&&player.attack===0)player.attack=12;
+if(player.attack>0){player.attack--;if(enemy.alive&&Math.abs((player.x+player.w/2)-(enemy.x+enemy.w/2))<34&&Math.abs(player.y-enemy.y)<28){enemy.alive=false;score++;document.getElementById('score').textContent=score}}
+if(enemy.alive){enemy.x+=enemy.dir*.55;enemy.walk++;if(enemy.x<275||enemy.x>390)enemy.dir*=-1;
+if(player.inv===0&&Math.abs(player.x-enemy.x)<17&&Math.abs(player.y-enemy.y)<22){lives--;player.inv=75;document.getElementById('life').textContent='♥'.repeat(lives)+'♡'.repeat(3-lives);player.x=Math.max(8,player.x-24);if(lives<=0){ended=true;show('VOCÊ CAIU NA ESCURIDÃO · TOQUE PARA RECOMEÇAR')}}
+}
+if(player.inv>0)player.inv--;
+if(player.x>455&& !enemy.alive){won=true;ended=true;show('A PASSAGEM SE ABRIU · FIM DA PRIMEIRA PROVA')}
+if(player.y>H){lives=0;ended=true;show('VOCÊ CAIU NA ESCURIDÃO · TOQUE PARA RECOMEÇAR')}
+}
+function show(t){const m=document.getElementById('message');m.textContent=t;m.style.display='block';m.style.top='40%'}
+function loop(){update();ctx.save();if(player.inv>0&&Math.floor(player.inv/5)%2===0){}else draw();ctx.restore();requestAnimationFrame(loop)}
+document.querySelectorAll('button[data-key]').forEach(b=>{
+const k=b.dataset.key;
+const down=e=>{e.preventDefault();keys[k]=true;b.classList.add('held');if(ended){reset()}};
+const up=e=>{e.preventDefault();keys[k]=false;b.classList.remove('held')};
+b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);
+});
+function reset(){score=0;lives=3;ended=false;won=false;enemy.x=320;enemy.alive=true;enemy.dir=-1;player.x=42;player.y=190;player.vy=0;player.inv=0;document.getElementById('score').textContent='0';document.getElementById('life').textContent='♥♥♥';document.getElementById('message').style.display='none'}
+window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.left=true;if(e.key==='ArrowRight'||e.key==='d')keys.right=true;if(e.key==='ArrowUp'||e.key===' '||e.key==='w')keys.jump=true;if(e.key==='z'||e.key==='x')keys.attack=true});
+window.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.left=false;if(e.key==='ArrowRight'||e.key==='d')keys.right=false;if(e.key==='ArrowUp'||e.key===' '||e.key==='w')keys.jump=false;if(e.key==='z'||e.key==='x')keys.attack=false});
+canvas.addEventListener('pointerdown',()=>{if(ended)reset()});
+loop();
+})();
+</script>
+</body>
+</html>
